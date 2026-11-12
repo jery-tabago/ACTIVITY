@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Schoolday – your daily student planner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{--bg:#e9eff7;--card:#fff;--ink:#14213d;--mute:#5b6985;--line:#cfd9ea;--accent:#2f5bea;--hi:#ffd84d;--hi-ink:#14213d;--ok:#1f9d6b;--bad:#d64545;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1730;--card:#18224a;--ink:#eef2ff;--mute:#9fb0d6;--line:#2c3a6b;--accent:#8aa6ff;--hi:#ffd84d;--hi-ink:#14213d;--ok:#4fd6a0;--bad:#ff8080;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1730;--card:#18224a;--ink:#eef2ff;--mute:#9fb0d6;--line:#2c3a6b;--accent:#8aa6ff;--ok:#4fd6a0;--bad:#ff8080;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Atkinson Hyperlegible",system-ui,sans-serif;
+background-image:linear-gradient(var(--line) 1px,transparent 1px);background-size:100% 32px;background-attachment:local}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 90px}
+h1,h2,.big{font-family:"Bricolage Grotesque","Trebuchet MS",sans-serif;margin:0}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}
+h1{font-size:clamp(1.8rem,6vw,2.6rem);line-height:1.05;font-weight:800}
+.date{color:var(--mute);margin:4px 0 0}
+.clock{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:1.5rem;background:var(--hi);color:var(--hi-ink);padding:4px 12px;border-radius:10px;transform:rotate(2deg);white-space:nowrap}
+.now{background:var(--ink);color:var(--bg);border-radius:18px;padding:20px;margin-bottom:16px}
+.now small{opacity:.75}
+.now .big{font-size:clamp(1.6rem,6vw,2.3rem);font-weight:800;line-height:1.1;margin:4px 0 10px}
+.bar{height:10px;background:rgba(255,255,255,.2);border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--hi);width:0;transition:width .6s}
+nav{display:flex;gap:6px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:8px 0;margin-bottom:8px}
+nav button{flex:1;padding:10px 4px;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;font:700 .95rem "Atkinson Hyperlegible",sans-serif;cursor:pointer}
+nav button[aria-selected=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+section[hidden]{display:none}
+.card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:10px}
+.grow{flex:1;min-width:0}
+.item{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.item.cur{border-color:var(--accent);box-shadow:5px 5px 0 var(--accent)}
+.item.past{opacity:.5}
+.time{font-weight:700;color:var(--accent);min-width:104px;font-size:.92rem}
+.item b{display:block}
+.mute{color:var(--mute);font-size:.88rem}
+form{display:flex;flex-wrap:wrap;gap:8px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:9px 10px;min-width:0}
+input[type=text]{flex:1 1 150px}
+textarea{width:100%;min-height:260px;resize:vertical}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:10px 16px;font:700 1rem "Atkinson Hyperlegible",sans-serif;cursor:pointer}
+.btn.alt{background:var(--card);color:var(--ink);border:2px solid var(--line)}
+.x{background:none;border:0;color:var(--mute);font-size:1.3rem;cursor:pointer;padding:4px 8px;border-radius:8px}
+.x:hover{color:var(--bad)}
+input[type=checkbox]{width:24px;height:24px;accent-color:var(--ok);flex:none}
+.done b{text-decoration:line-through;color:var(--mute)}
+.due-soon{color:var(--bad);font-weight:700}
+.empty{text-align:center;color:var(--mute);padding:24px 8px}
+.timer{text-align:center;padding:28px 14px}
+.timer .big{font-size:clamp(4rem,22vw,7rem);font-weight:800;letter-spacing:-.02em;line-height:1}
+.modes{display:flex;justify-content:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.modes button[aria-pressed=true]{background:var(--hi);color:var(--hi-ink);border-color:var(--hi)}
+.tip{border-left:6px solid var(--hi);padding-left:12px;margin:14px 2px;color:var(--mute)}
+h2{font-size:1.2rem;margin:14px 0 8px}
+@media (max-width:480px){.time{min-width:84px;font-size:.82rem}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1 id="hello">Schoolday</h1><p class="date" id="date"></p></div>
+  <div class="clock" id="clock">--:--</div>
+</header>
+
+<div class="now" id="now" aria-live="polite"></div>
+
+<nav role="tablist" aria-label="Sections">
+  <button role="tab" aria-selected="true" data-tab="today">Classes</button>
+  <button role="tab" aria-selected="false" data-tab="hw">Homework</button>
+  <button role="tab" aria-selected="false" data-tab="focus">Focus</button>
+  <button role="tab" aria-selected="false" data-tab="notes">Notes</button>
+</nav>
+
+<section id="today">
+  <div id="classes"></div>
+  <h2>Add a class</h2>
+  <form id="classForm" class="card">
+    <input type="text" id="cName" placeholder="Subject (e.g. Math)" required aria-label="Subject">
+    <input type="time" id="cStart" required aria-label="Start time">
+    <input type="time" id="cEnd" required aria-label="End time">
+    <button class="btn" type="submit">Add class</button>
+  </form>
+</section>
+
+<section id="hw" hidden>
+  <form id="hwForm" class="card">
+    <input type="text" id="hTask" placeholder="What do you need to do?" required aria-label="Task">
+    <input type="text" id="hSub" placeholder="Subject" aria-label="Subject" style="flex:0 1 120px">
+    <input type="date" id="hDue" aria-label="Due date">
+    <button class="btn" type="submit">Add task</button>
+  </form>
+  <div id="tasks"></div>
+</section>
+
+<section id="focus" hidden>
+  <div class="card timer">
+    <div class="modes" id="modes">
+      <button class="btn alt" data-m="25" aria-pressed="true">Study 25</button>
+      <button class="btn alt" data-m="5" aria-pressed="false">Short break 5</button>
+      <button class="btn alt" data-m="15" aria-pressed="false">Long break 15</button>
+    </div>
+    <div class="big" id="tm" role="timer">25:00</div>
+    <div class="row" style="justify-content:center;margin-top:16px">
+      <button class="btn" id="go">Start</button>
+      <button class="btn alt" id="reset">Reset</button>
+    </div>
+    <p class="mute" id="rounds">Study rounds finished today: 0</p>
+  </div>
+  <p class="tip">Study for 25 minutes, then rest for 5. After four rounds, take a longer break. Put your phone out of reach while the timer runs.</p>
+</section>
+
+<section id="notes" hidden>
+  <label for="nt" class="mute">Quick notes. They save on this device as you type.</label>
+  <textarea id="nt" placeholder="Jot down reminders, formulas, ideas…"></textarea>
+  <p class="mute" id="saved"></p>
+</section>
+</div>
+
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)};
+var store={get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+var classes=store.get("sd_classes",[
+ {id:1,name:"Math",s:"08:00",e:"08:50"},{id:2,name:"English",s:"09:00",e:"09:50"},
+ {id:3,name:"Science",s:"10:10",e:"11:00"},{id:4,name:"Lunch",s:"12:00",e:"12:45"},
+ {id:5,name:"History",s:"13:00",e:"13:50"}]);
+var tasks=store.get("sd_tasks",[]);
+function mins(t){var p=t.split(":");return +p[0]*60+ +p[1]}
+function fmt(t){var p=t.split(":"),h=+p[0];return (h%12||12)+":"+p[1]+(h<12?" am":" pm")}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+function renderClasses(){
+  var now=new Date(),m=now.getHours()*60+now.getMinutes();
+  classes.sort(function(a,b){return mins(a.s)-mins(b.s)});
+  var h="";
+  classes.forEach(function(c){
+    var cur=m>=mins(c.s)&&m<mins(c.e),past=m>=mins(c.e);
+    h+='<div class="item'+(cur?" cur":"")+(past?" past":"")+'"><span class="time">'+fmt(c.s)+" – "+fmt(c.e)+'</span><span class="grow"><b>'+esc(c.name)+'</b>'+(cur?'<span class="mute">Happening now</span>':"")+'</span><button class="x" data-del="'+c.id+'" aria-label="Remove '+esc(c.name)+'">×</button></div>';
+  });
+  $("#classes").innerHTML=h||'<div class="empty">No classes yet. Add your first one below.</div>';
+  renderNow(m);
+}
+function renderNow(m){
+  var cur=classes.filter(function(c){return m>=mins(c.s)&&m<mins(c.e)})[0];
+  var nxt=classes.filter(function(c){return mins(c.s)>m})[0];
+  var el=$("#now");
+  if(cur){
+    var pct=Math.round((m-mins(cur.s))/(mins(cur.e)-mins(cur.s))*100);
+    el.innerHTML='<small>Now in class</small><div class="big">'+esc(cur.name)+'</div><div class="bar"><i style="width:'+pct+'%"></i></div><small>'+(mins(cur.e)-m)+' min left'+(nxt?" · next: "+esc(nxt.name)+" at "+fmt(nxt.s):"")+'</small>';
+  }else if(nxt){
+    el.innerHTML='<small>Up next</small><div class="big">'+esc(nxt.name)+'</div><small>Starts at '+fmt(nxt.s)+', in '+(mins(nxt.s)-m)+' min</small>';
+  }else{
+    el.innerHTML='<small>School day</small><div class="big">'+(classes.length?"All classes done":"No classes added")+'</div><small>'+(classes.length?"Check your homework tab before you go.":"Add your timetable to get started.")+'</small>';
+  }
+}
+function renderTasks(){
+  tasks.sort(function(a,b){return (a.done-b.done)||((a.due||"9")>(b.due||"9")?1:-1)});
+  var today=new Date().toISOString().slice(0,10),h="";
+  tasks.forEach(function(t){
+    var soon=t.due&&!t.done&&t.due<=today;
+    h+='<div class="item'+(t.done?" done":"")+'"><input type="checkbox" data-chk="'+t.id+'"'+(t.done?" checked":"")+' aria-label="Mark done"><span class="grow"><b>'+esc(t.task)+'</b><span class="mute">'+(t.sub?esc(t.sub):"")+(t.sub&&t.due?" · ":"")+(t.due?'<span class="'+(soon?"due-soon":"")+'">'+(t.due<today&&!t.done?"Overdue, ":"Due ")+t.due+'</span>':"")+'</span></span><button class="x" data-tdel="'+t.id+'" aria-label="Delete task">×</button></div>';
+  });
+  $("#tasks").innerHTML=h||'<div class="empty">Nothing due. Add a task above when you get one.</div>';
+}
+$("#classForm").onsubmit=function(e){e.preventDefault();
+  if(mins($("#cEnd").value)<=mins($("#cStart").value)){alert("End time must be after the start time.");return}
+  classes.push({id:Date.now(),name:$("#cName").value.trim(),s:$("#cStart").value,e:$("#cEnd").value});
+  store.set("sd_classes",classes);this.reset();renderClasses()};
+$("#classes").onclick=function(e){var d=e.target.dataset.del;if(d){classes=classes.filter(function(c){return c.id!=d});store.set("sd_classes",classes);renderClasses()}};
+$("#hwForm").onsubmit=function(e){e.preventDefault();
+  tasks.push({id:Date.now(),task:$("#hTask").value.trim(),sub:$("#hSub").value.trim(),due:$("#hDue").value,done:0});
+  store.set("sd_tasks",tasks);this.reset();renderTasks()};
+$("#tasks").onclick=function(e){var t=e.target.dataset;
+  if(t.tdel){tasks=tasks.filter(function(x){return x.id!=t.tdel})}
+  else if(t.chk){tasks.forEach(function(x){if(x.id==t.chk)x.done=x.done?0:1})}
+  else return;
+  store.set("sd_tasks",tasks);renderTasks()};
+
+/* tabs */
+document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){
+  document.querySelectorAll("nav button").forEach(function(x){x.setAttribute("aria-selected",x===b)});
+  ["today","hw","focus","notes"].forEach(function(id){$("#"+id).hidden=id!==b.dataset.tab})}});
+
+/* focus timer */
+var total=25*60,left=total,iv=null,rounds=store.get("sd_rounds",{d:"",n:0}),day=new Date().toDateString();
+if(rounds.d!==day)rounds={d:day,n:0};
+function showT(){var m=Math.floor(left/60),s=left%60;$("#tm").textContent=(m<10?"0":"")+m+":"+(s<10?"0":"")+s;document.title=(iv?$("#tm").textContent+" · ":"")+"Schoolday";$("#rounds").textContent="Study rounds finished today: "+rounds.n}
+function beep(){try{var a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator();o.connect(a.destination);o.frequency.value=880;o.start();setTimeout(function(){o.stop()},500)}catch(e){}}
+function stop(){clearInterval(iv);iv=null;$("#go").textContent="Start"}
+$("#go").onclick=function(){
+  if(iv){stop();showT();return}
+  $("#go").textContent="Pause";
+  iv=setInterval(function(){left--;
+    if(left<=0){left=0;stop();beep();if(total===1500){rounds.n++;store.set("sd_rounds",rounds)}}
+    showT()},1000)};
+$("#reset").onclick=function(){stop();left=total;showT()};
+$("#modes").onclick=function(e){var m=e.target.dataset.m;if(!m)return;stop();total=left=m*60;
+  document.querySelectorAll("#modes button").forEach(function(b){b.setAttribute("aria-pressed",b===e.target)});showT()};
+
+/* notes */
+$("#nt").value=store.get("sd_notes","");
+var nt;$("#nt").oninput=function(){clearTimeout(nt);nt=setTimeout(function(){store.set("sd_notes",$("#nt").value);$("#saved").textContent="Saved"},400)};
+
+/* header */
+function tick(){var d=new Date(),h=d.getHours();
+  $("#clock").textContent=d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+  $("#date").textContent=d.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"});
+  $("#hello").textContent=h<12?"Good morning":h<18?"Good afternoon":"Good evening";
+  renderNow(h*60+d.getMinutes())}
+renderClasses();renderTasks();showT();tick();
+setInterval(function(){tick();renderClasses()},30000);
+})();
+</script>
+</body>
+</html>
